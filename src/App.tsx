@@ -23,7 +23,7 @@ function App() {
 
   return (
     <div className="app">
-      <Carousel data={imgData} width={550} height={300} />
+      <Carousel data={imgData} width={550} height={300} tweenAnime="ease" />
     </div>
   )
 }
