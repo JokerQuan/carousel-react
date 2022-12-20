@@ -1,0 +1,16 @@
+.carousel {
+  /* overflow: hidden; */
+  border: 2px solid red;
+}
+
+.carousel .slider {
+  display: absolute;
+}
+
+.carousel .slider .slice {
+  float: left;
+}
+
+.carousel .slider .slice img {
+  display: block;
+}
