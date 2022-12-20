@@ -54,7 +54,6 @@ export default function Carousel(props: ICarouselProps) {
   }, [])
 
   useEffect(() => {
-    console.log(current)
     timer.current = setTimeout(next, pauseDuration)
     return () => clearTimeout(timer.current)
   }, [current])
