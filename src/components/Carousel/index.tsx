@@ -13,6 +13,7 @@ export interface ICarouselProps {
   height: number;
   pauseDuration?: number;
   slideDuration?: number;
+  direction?: 1 | -1;
   tweenAnime?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "bounce" | Function
 }
 
@@ -23,9 +24,10 @@ export default function Carousel(props: ICarouselProps) {
     height,
     pauseDuration = 2000,
     slideDuration = 1000,
+    direction = 1,
     tweenAnime = "ease",
   } = props
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(direction === 1 ? 1 : data.length);
   const sliderRef = useRef<HTMLDivElement>(null)
   const dataRef = useRef([
     data[data.length - 1],
@@ -44,38 +46,54 @@ export default function Carousel(props: ICarouselProps) {
   }, [tweenAnime])
 
   useEffect(() => {
+    if (direction === 1) {
+      sliderRef.current!.style.left = `${-width}px`
+    } else {
+      sliderRef.current!.style.left = `${- (dataRef.current.length - 2) * width}px`
+    }
+  }, [])
+
+  useEffect(() => {
+    console.log(current)
     timer.current = setTimeout(next, pauseDuration)
     return () => clearTimeout(timer.current)
   }, [current])
 
   const next = () => {
-    go(current + 1)
+    go(current + direction)
   }
 
   const go = (index: number) => {
     const startTime = Date.now()
-    let progress = 0
+    let left = 0
     //begin value
     const b = current * width
     //change value
     const c = (index - current) * width
     const anim = () => {
       const currTime = Math.min(slideDuration, Date.now() - startTime)
-      progress = tweenFn(currTime, b, c, slideDuration)
+      left = tweenFn(currTime, b, c, slideDuration)
       if (currTime < slideDuration) {
-        sliderRef.current!.style.left = `${-progress}px`
+        sliderRef.current!.style.left = `${-left}px`
         requestAnimationFrame(anim)
       } else {
         // animation end, start next timer
-        if (progress === (dataRef.current.length - 1) * width) {
-          sliderRef.current!.style.left = `${-width}px`
-          setCurrent(1)
-        } else {
-          setCurrent(index)
-        }
+        calcNext(left)
       }
     }
     anim()
+  }
+
+  const calcNext = (left: number) => {
+    if (left === (dataRef.current.length - 1) * width && direction === 1) {
+      sliderRef.current!.style.left = `${-width}px`
+      setCurrent(1)
+    } else if (left === 0 && direction === -1) {
+      sliderRef.current!.style.left = `${- (dataRef.current!.length - 2) * width}px`
+      setCurrent(dataRef.current!.length - 2)
+    } else {
+      setCurrent(current + direction)
+    }
   }
 
   return (
