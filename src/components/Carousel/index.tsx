@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react'
 import './index.css'
 import tween from './tween';
 
@@ -15,10 +15,11 @@ export interface ICarouselProps {
   slideDuration?: number;
   direction?: 1 | -1;
   pauseOnHover?: boolean;
+  autoPlay?: boolean;
   tweenAnime?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "bounce" | Function
 }
 
-export default function Carousel(props: ICarouselProps) {
+const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   const { 
     data,
     width,
@@ -27,12 +28,14 @@ export default function Carousel(props: ICarouselProps) {
     slideDuration = 1000,
     direction = 1,
     pauseOnHover = true,
+    autoPlay = true,
     tweenAnime = "ease",
   } = props
   const [current, setCurrent] = useState(direction === 1 ? 1 : data.length)
   const pauseRef = useRef(false)
   const leftRef = useRef(0)
   const sliderRef = useRef<HTMLDivElement>(null)
+  const slidingRef = useRef(false)
   const dataRef = useRef([
     data[data.length - 1],
     ...data,
@@ -76,36 +79,43 @@ export default function Carousel(props: ICarouselProps) {
       return;
     }
     const anim = () => {
+      slidingRef.current = true
       const currTime = Math.min(slideDuration, Date.now() - startTime)
       leftRef.current = tweenFn(currTime, b, c, slideDuration)
-      if (currTime === slideDuration) {
-        // animation end, start next timer
-        calcNext()
-      } else {
+      if (leftRef.current !== b + c) {
         sliderRef.current!.style.left = `${-leftRef.current}px`
         requestAnimationFrame(anim)
+      } else {
+        slidingRef.current = false
+        // animation end, start next timer
+        calcNext()
       }
     }
     anim()
   }
 
   const calcNext = () => {
-    if (pauseOnHover && pauseRef.current) return;
-    if (leftRef.current >= (dataRef.current.length - 1) * width && direction === 1) {
+    if (leftRef.current >= (dataRef.current.length - 1) * width) {
       leftRef.current = width
       sliderRef.current!.style.left = `${-leftRef.current}px`
-      setCurrent(1)
-    } else if (leftRef.current <= 0 && direction === -1) {
+      updateCurrent(1)
+    } else if (leftRef.current <= 0) {
       leftRef.current = (dataRef.current!.length - 2) * width
       sliderRef.current!.style.left = `${-leftRef.current}px`
-      setCurrent(dataRef.current!.length - 2)
+      updateCurrent(dataRef.current!.length - 2)
     } else {
-      updateCurrentDelay(leftRef.current / width + direction)
+      if (autoPlay && pauseOnHover && !pauseRef.current) {
+        updateCurrentDelay(leftRef.current / width + direction)
+      }
     }
   }
 
-  const updateCurrentDelay = (v: number) => {
-    timer.current = setTimeout(() => setCurrent(v), pauseDuration)
+  const updateCurrent = (next: number) => {
+    setCurrent(next)
+  }
+
+  const updateCurrentDelay = (next: number) => {
+    timer.current = setTimeout(() => setCurrent(next), pauseDuration)
   }
 
   const pauseTimer = () => {
@@ -119,6 +129,16 @@ export default function Carousel(props: ICarouselProps) {
     if (!pauseOnHover) return;
     pauseRef.current = false
     calcNext()
+  }
+
+  const goPrev = () => {
+    if (slidingRef.current) return;
+    setCurrent(current - 1)
+  }
+
+  const goNext = () => {
+    if (slidingRef.current) return;
+    setCurrent(current + 1)
   }
 
   return (
@@ -135,6 +155,10 @@ export default function Carousel(props: ICarouselProps) {
           ))
         }
       </div>
+      <button onClick={goPrev}>prev</button>
+      <button onClick={goNext}>next</button>
     </div>
   )
 }
+
+export default Carousel
