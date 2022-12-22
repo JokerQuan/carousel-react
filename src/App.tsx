@@ -30,7 +30,8 @@ function App() {
         pauseDuration={1000}
         slideDuration={500}
         direction={1}
-        pauseOnHover={false}
+        autoPlay={true}
+        pauseOnHover={true}
         tweenAnime="ease" />
     </div>
   )

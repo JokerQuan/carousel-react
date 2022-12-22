@@ -104,8 +104,11 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       sliderRef.current!.style.left = `${-leftRef.current}px`
       updateCurrent(dataRef.current!.length - 2)
     } else {
-      if (autoPlay && pauseOnHover && !pauseRef.current) {
-        updateCurrentDelay(leftRef.current / width + direction)
+      // calculate autoplay and pause
+      if (autoPlay) {
+        if (!pauseOnHover || (pauseOnHover && !pauseRef.current)) {
+          updateCurrentDelay(leftRef.current / width + direction)
+        }
       }
     }
   }
