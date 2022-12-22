@@ -78,8 +78,8 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       calcNext()
       return;
     }
+    slidingRef.current = true
     const anim = () => {
-      slidingRef.current = true
       const currTime = Math.min(slideDuration, Date.now() - startTime)
       leftRef.current = tweenFn(currTime, b, c, slideDuration)
       if (leftRef.current !== b + c) {
