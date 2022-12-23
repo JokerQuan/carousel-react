@@ -5,10 +5,10 @@ import Carousel from './components/Carousel'
 
 function App() {
   const imgData = [{
-    link: "https://www.baidu.com",
+    link: "https://www.bing.com",
     src: "https://img.alicdn.com/imgextra/i1/6000000002041/O1CN01Dw6SBo1QwpAedJV7p_!!6000000002041-0-octopus.jpg",
   }, {
-    link: "https://www.zhihu.com",
+    link: "https://www.youtube.com",
     src: "https://img.alicdn.com/imgextra/i2/6000000003292/O1CN0148GwRI1aBmeLAqrab_!!6000000003292-0-octopus.jpg",
   }, {
     link: "https://www.github.com",
@@ -17,7 +17,7 @@ function App() {
     link: "https://www.google.com",
     src: "https://img.alicdn.com/imgextra/i2/6000000003159/O1CN01dTNCKU1ZCrySxTRtj_!!6000000003159-2-octopus.png",
   }, {
-    link: "https://www.weibo.com",
+    link: "https://www.facebook.com",
     src: "https://img.alicdn.com/imgextra/i4/6000000003767/O1CN01KUtSXc1dhKmYeYeIK_!!6000000003767-2-octopus.png",
   }]
 
@@ -32,7 +32,8 @@ function App() {
         direction={1}
         autoPlay={true}
         pauseOnHover={true}
-        tweenAnime="ease" />
+        tweenAnime="ease"
+        onItemClick={item => window.open(item.link)} />
     </div>
   )
 }

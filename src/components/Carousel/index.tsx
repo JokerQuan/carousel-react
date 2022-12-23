@@ -14,6 +14,12 @@ export interface ImgData {
   src: string;
 }
 
+export interface ClickedItem {
+  index: number,
+  link?: string;
+  src: string;
+}
+
 export interface ICarouselProps {
   data: Array<ImgData>;
   width: number;
@@ -28,8 +34,9 @@ export interface ICarouselProps {
   bottomCursor?: boolean;
   bottomCursorColor?: string;
   bottomCursorActiveColor?: string;
-  draggable?: boolean
-  dragthreshold?: number
+  draggable?: boolean;
+  dragthreshold?: number;
+  onItemClick?: (item: ClickedItem) => void;
 }
 
 const Carousel: FunctionComponent<ICarouselProps> = (props) => {
@@ -49,6 +56,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     bottomCursorActiveColor = "#1677ff",
     draggable = true,
     dragthreshold = 150,
+    onItemClick,
   } = props
   const [current, setCurrent] = useState(direction === 1 ? 1 : data.length)
   const pauseRef = useRef(false)
@@ -64,6 +72,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   const timer = useRef(-1)
   const mouseDownClientXRef = useRef(-1)
   const mouseMoveClientXRef = useRef(0)
+  const preventClick = useRef(false)
   const tweenFn = useMemo(() => {
     if (typeof tweenAnime === "function") {
       return tweenAnime
@@ -202,6 +211,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   const handleMouseMove = (e: MouseEvent) => {
     if (!draggable) return;
     if (mouseDownClientXRef.current === -1) return;
+    preventClick.current = true
     mouseMoveClientXRef.current = e.clientX
     const offset = mouseMoveClientXRef.current - mouseDownClientXRef.current
     sliderRef.current!.style.left = `${-(leftRef.current - offset)}px`
@@ -238,6 +248,24 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     mouseMoveClientXRef.current = 0
   }
 
+  const handleItemClick = (index: number) => {
+    if (preventClick.current) {
+      preventClick.current = false
+      return;
+    }
+    if (typeof onItemClick === "function") {
+      const item = {...dataRef.current[index]} as ClickedItem
+      if (index === 0) {
+        item.index = dataRef.current.length - 2
+      } else if (index === dataRef.current.length - 1) {
+        item.index = 0
+      } else {
+        item.index = index - 1
+      }
+      onItemClick(item)
+    }
+  }
+
   return (
     <div className='carousel' style={{width: `${width}px`, height: `${height}px`}}
       onMouseEnter={pauseTimer}
@@ -249,7 +277,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       <div className='slider' ref={sliderRef} style={{width: `${dataRef.current.length * width}px`}}>
         {
           dataRef.current.map((img, index) => (
-            <div key={index} className="slice">
+            <div key={index} className="slice" onClick={() => handleItemClick(index)}>
               <img src={img.src} alt="" width={width} height={height}/>
             </div>
           ))
