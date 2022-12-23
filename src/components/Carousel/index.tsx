@@ -16,7 +16,11 @@ export interface ICarouselProps {
   direction?: 1 | -1;
   pauseOnHover?: boolean;
   autoPlay?: boolean;
-  tweenAnime?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "bounce" | Function
+  tweenAnime?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "bounce" | Function;
+  navButton?: boolean;
+  bottomCursor?: boolean;
+  bottomCursorColor?: string;
+  bottomCursorActiveColor?: string;
 }
 
 const Carousel: FunctionComponent<ICarouselProps> = (props) => {
@@ -30,12 +34,17 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     pauseOnHover = true,
     autoPlay = true,
     tweenAnime = "ease",
+    navButton = true,
+    bottomCursor = true,
+    bottomCursorColor = "#ffffff",
+    bottomCursorActiveColor = "#1677ff",
   } = props
   const [current, setCurrent] = useState(direction === 1 ? 1 : data.length)
   const pauseRef = useRef(false)
   const leftRef = useRef(0)
   const sliderRef = useRef<HTMLDivElement>(null)
   const slidingRef = useRef(false)
+  const rafRef = useRef(-1)
   const dataRef = useRef([
     data[data.length - 1],
     ...data,
@@ -69,6 +78,9 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   }, [current])
 
   const go = (index: number) => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current)
+    }
     const startTime = Date.now()
     //begin value
     const b = leftRef.current
@@ -84,7 +96,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       leftRef.current = tweenFn(currTime, b, c, slideDuration)
       if (leftRef.current !== b + c) {
         sliderRef.current!.style.left = `${-leftRef.current}px`
-        requestAnimationFrame(anim)
+        rafRef.current = requestAnimationFrame(anim)
       } else {
         slidingRef.current = false
         // animation end, start next timer
@@ -107,7 +119,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       // calculate autoplay and pause
       if (autoPlay) {
         if (!pauseOnHover || (pauseOnHover && !pauseRef.current)) {
-          updateCurrentDelay(leftRef.current / width + direction)
+          updateCurrentDelay(Math.floor(leftRef.current / width) + direction)
         }
       }
     }
@@ -131,7 +143,9 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   const resumeTimer = () => {
     if (!pauseOnHover) return;
     pauseRef.current = false
-    calcNext()
+    if (!slidingRef.current) {
+      calcNext()
+    }
   }
 
   const goPrev = () => {
@@ -142,6 +156,23 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   const goNext = () => {
     if (slidingRef.current) return;
     setCurrent(current + 1)
+  }
+
+  const isCursorActive = (cursorIndex: number) : boolean => {
+    if (current === cursorIndex + 1) {
+      return true
+    }
+    if (current <= 0 && cursorIndex == dataRef.current.length - 3) {
+      return true
+    }
+    if (current >= dataRef.current.length - 1 && cursorIndex === 0) {
+      return true
+    }
+    return false
+  }
+
+  const handleCursorClick = (cursorIndex: number) => {
+    setCurrent(cursorIndex + 1)
   }
 
   return (
@@ -158,8 +189,26 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
           ))
         }
       </div>
-      <button onClick={goPrev}>prev</button>
-      <button onClick={goNext}>next</button>
+      {
+        navButton && 
+        <>
+          <div className='nav-btn left' onClick={goPrev}></div>
+          <div className='nav-btn right' onClick={goNext}></div>
+        </>
+      }
+      {
+        bottomCursor &&
+        <div className='bottom-cursor'>
+          {
+            data.map((_, index) => (
+              <div key={index} className={isCursorActive(index) ? "active" : ""}
+                onClick={() => handleCursorClick(index)}
+                style={{backgroundColor: isCursorActive(index) ? bottomCursorActiveColor : bottomCursorColor}}
+              ></div>
+            ))
+          }
+        </div>
+      }
     </div>
   )
 }

@@ -1,7 +1,8 @@
 .carousel {
-  /* overflow: hidden; */
-  border: 2px solid red;
+  overflow: hidden;
+  /* border: 2px solid red; */
   cursor: pointer;
+  position: relative;
 }
 
 .carousel .slider {
@@ -14,4 +15,56 @@
 
 .carousel .slider .slice img {
   display: block;
+}
+
+.carousel .nav-btn {
+  display: none;
+}
+
+.carousel:hover .nav-btn {
+  display: block;
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  border-radius: 50%;
+  background-color: #666666cc;
+  top: 50%;
+  transform: translateY(-50%);
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  background-position: center;
+}
+
+.carousel .nav-btn.left {
+  background-image: url('./left.png');
+  left: 10px;
+}
+
+.carousel .nav-btn.right {
+  background-image: url('./right.png');
+  right: 10px;
+}
+
+.carousel .bottom-cursor {
+  position: absolute;
+  background-color: #ffffff55;
+  padding: 3px 5px;
+  border-radius: 15px;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.carousel .bottom-cursor > div {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.carousel .bottom-cursor > div.active {
+  width: 12px;
+  height: 12px;
 }
