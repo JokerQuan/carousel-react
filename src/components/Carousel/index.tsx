@@ -1,4 +1,11 @@
-import React, { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react'
+import React, { 
+  FunctionComponent,
+  MouseEvent,
+  useEffect, 
+  useMemo,
+  useRef,
+  useState 
+} from 'react'
 import './index.css'
 import tween from './tween';
 
@@ -21,6 +28,8 @@ export interface ICarouselProps {
   bottomCursor?: boolean;
   bottomCursorColor?: string;
   bottomCursorActiveColor?: string;
+  draggable?: boolean
+  dragthreshold?: number
 }
 
 const Carousel: FunctionComponent<ICarouselProps> = (props) => {
@@ -38,6 +47,8 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     bottomCursor = true,
     bottomCursorColor = "#ffffff",
     bottomCursorActiveColor = "#1677ff",
+    draggable = true,
+    dragthreshold = 150,
   } = props
   const [current, setCurrent] = useState(direction === 1 ? 1 : data.length)
   const pauseRef = useRef(false)
@@ -51,6 +62,8 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     data[0]
   ])
   const timer = useRef(-1)
+  const mouseDownClientXRef = useRef(-1)
+  const mouseMoveClientXRef = useRef(0)
   const tweenFn = useMemo(() => {
     if (typeof tweenAnime === "function") {
       return tweenAnime
@@ -148,12 +161,16 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     }
   }
 
-  const goPrev = () => {
+  const goPrev = (e: MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (slidingRef.current) return;
     setCurrent(current - 1)
   }
 
-  const goNext = () => {
+  const goNext = (e: MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (slidingRef.current) return;
     setCurrent(current + 1)
   }
@@ -175,10 +192,59 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     setCurrent(cursorIndex + 1)
   }
 
+  const handleMouseDown = (e: MouseEvent) => {
+    if (!draggable) return;
+    e.preventDefault()
+    e.stopPropagation()
+    mouseDownClientXRef.current = e.clientX
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!draggable) return;
+    if (mouseDownClientXRef.current === -1) return;
+    mouseMoveClientXRef.current = e.clientX
+    const offset = mouseMoveClientXRef.current - mouseDownClientXRef.current
+    sliderRef.current!.style.left = `${-(leftRef.current - offset)}px`
+  }
+
+  const handleMouseUp = (e: MouseEvent) => {
+    if (!draggable) return;
+    if (mouseMoveClientXRef.current === 0) {
+      mouseDownClientXRef.current = -1
+      return;
+    }
+    handleSlideEnd()
+  }
+
+  const handleMouseLeave = (e: MouseEvent) => {
+    if (mouseMoveClientXRef.current === 0) {
+      mouseDownClientXRef.current = -1
+      resumeTimer()
+      return;
+    }
+    pauseRef.current = false
+    handleSlideEnd()
+  }
+
+  const handleSlideEnd = () => {
+    const offset = mouseMoveClientXRef.current - mouseDownClientXRef.current
+    leftRef.current = leftRef.current - offset
+    if (Math.abs(offset) >= dragthreshold) {
+      setCurrent(current - Math.abs(offset) / offset)
+    } else {
+      go(current)
+    }
+    mouseDownClientXRef.current = -1
+    mouseMoveClientXRef.current = 0
+  }
+
   return (
     <div className='carousel' style={{width: `${width}px`, height: `${height}px`}}
       onMouseEnter={pauseTimer}
-      onMouseLeave={resumeTimer}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
     >
       <div className='slider' ref={sliderRef} style={{width: `${dataRef.current.length * width}px`}}>
         {
@@ -192,8 +258,16 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       {
         navButton && 
         <>
-          <div className='nav-btn left' onClick={goPrev}></div>
-          <div className='nav-btn right' onClick={goNext}></div>
+          <div className='nav-btn left' onClick={goPrev}
+            onMouseUp={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+            onMouseMove={e => e.stopPropagation()}
+            ></div>
+          <div className='nav-btn right' onClick={goNext}
+            onMouseUp={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+            onMouseMove={e => e.stopPropagation()}
+          ></div>
         </>
       }
       {
