@@ -7,23 +7,15 @@ import React, {
   useState 
 } from 'react'
 import './index.css'
-import tween from './tween';
-
-export interface ImgData {
-  link?: string;
-  src: string;
-}
+import tween from './tween'
 
 export interface ClickedItem {
-  index: number,
-  link?: string;
-  src: string;
+  index: number;
 }
 
 export interface ICarouselProps {
-  data: Array<ImgData>;
-  width: number;
-  height: number;
+  width?: number | string;
+  height?: number | string;
   pauseDuration?: number;
   slideDuration?: number;
   direction?: 1 | -1;
@@ -37,11 +29,11 @@ export interface ICarouselProps {
   draggable?: boolean;
   dragthreshold?: number;
   onItemClick?: (item: ClickedItem) => void;
+  children: Array<React.ReactNode>;
 }
 
 const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   const { 
-    data,
     width,
     height,
     pauseDuration = 2000,
@@ -57,17 +49,19 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     draggable = true,
     dragthreshold = 150,
     onItemClick,
+    children,
   } = props
-  const [current, setCurrent] = useState(direction === 1 ? 1 : data.length)
+  const [current, setCurrent] = useState(direction === 1 ? 1 : children.length)
+  const absPerWidthRef = useRef(0)
   const pauseRef = useRef(false)
   const leftRef = useRef(0)
   const sliderRef = useRef<HTMLDivElement>(null)
   const slidingRef = useRef(false)
   const rafRef = useRef(-1)
   const dataRef = useRef([
-    data[data.length - 1],
-    ...data,
-    data[0]
+    children[children.length - 1],
+    ...children,
+    children[0]
   ])
   const timer = useRef(-1)
   const mouseDownClientXRef = useRef(-1)
@@ -85,11 +79,13 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
 
   const init = () => {
     if (direction === 1) {
-      leftRef.current = width
+      leftRef.current = 100
     } else {
-      leftRef.current = (dataRef.current.length - 2) * width
+      leftRef.current = (dataRef.current.length - 2) * 100
     }
-    sliderRef.current!.style.left = `${-leftRef.current}px`
+    sliderRef.current!.style.left = `${-leftRef.current}%`
+
+    absPerWidthRef.current = sliderRef.current!.getBoundingClientRect().width / dataRef.current.length
   }
 
   useEffect(init, [])
@@ -107,7 +103,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     //begin value
     const b = leftRef.current
     //change value
-    const c = index * width - leftRef.current
+    const c = index * 100 - leftRef.current
     if (c === 0) {
       calcNext()
       return;
@@ -117,7 +113,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       const currTime = Math.min(slideDuration, Date.now() - startTime)
       leftRef.current = tweenFn(currTime, b, c, slideDuration)
       if (leftRef.current !== b + c) {
-        sliderRef.current!.style.left = `${-leftRef.current}px`
+        sliderRef.current!.style.left = `${-leftRef.current}%`
         rafRef.current = requestAnimationFrame(anim)
       } else {
         slidingRef.current = false
@@ -129,19 +125,19 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   }
 
   const calcNext = () => {
-    if (leftRef.current >= (dataRef.current.length - 1) * width) {
-      leftRef.current = width
-      sliderRef.current!.style.left = `${-leftRef.current}px`
+    if (leftRef.current >= (dataRef.current.length - 1) * 100) {
+      leftRef.current = 100
+      sliderRef.current!.style.left = `${-leftRef.current}%`
       updateCurrent(1)
     } else if (leftRef.current <= 0) {
-      leftRef.current = (dataRef.current!.length - 2) * width
-      sliderRef.current!.style.left = `${-leftRef.current}px`
+      leftRef.current = (dataRef.current!.length - 2) * 100
+      sliderRef.current!.style.left = `${-leftRef.current}%`
       updateCurrent(dataRef.current!.length - 2)
     } else {
       // calculate autoplay and pause
       if (autoPlay) {
         if (!pauseOnHover || (pauseOnHover && !pauseRef.current)) {
-          updateCurrentDelay(Math.floor(leftRef.current / width) + direction)
+          updateCurrentDelay(Math.floor(leftRef.current / 100) + direction)
         }
       }
     }
@@ -213,8 +209,8 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     if (mouseDownClientXRef.current === -1) return;
     preventClick.current = true
     mouseMoveClientXRef.current = e.clientX
-    const offset = mouseMoveClientXRef.current - mouseDownClientXRef.current
-    sliderRef.current!.style.left = `${-(leftRef.current - offset)}px`
+    const offset = (mouseMoveClientXRef.current - mouseDownClientXRef.current) / absPerWidthRef.current * 100
+    sliderRef.current!.style.left = `${-(leftRef.current - offset)}%`
   }
 
   const handleMouseUp = (e: MouseEvent) => {
@@ -237,9 +233,10 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   }
 
   const handleSlideEnd = () => {
-    const offset = mouseMoveClientXRef.current - mouseDownClientXRef.current
+    const absOffset = mouseMoveClientXRef.current - mouseDownClientXRef.current
+    const offset = absOffset / absPerWidthRef.current * 100
     leftRef.current = leftRef.current - offset
-    if (Math.abs(offset) >= dragthreshold) {
+    if (Math.abs(absOffset) >= dragthreshold) {
       setCurrent(current - Math.abs(offset) / offset)
     } else {
       go(current)
@@ -254,31 +251,34 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       return;
     }
     if (typeof onItemClick === "function") {
-      const item = {...dataRef.current[index]} as ClickedItem
+      let i = 0
       if (index === 0) {
-        item.index = dataRef.current.length - 2
+        i = dataRef.current.length - 2
       } else if (index === dataRef.current.length - 1) {
-        item.index = 0
+        i = 0
       } else {
-        item.index = index - 1
+        i = index - 1
       }
-      onItemClick(item)
+      onItemClick({index: i})
     }
   }
 
   return (
-    <div className='carousel' style={{width: `${width}px`, height: `${height}px`}}
+    <div className='carousel' style={{width, height}}
       onMouseEnter={pauseTimer}
       onMouseLeave={handleMouseLeave}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
     >
-      <div className='slider' ref={sliderRef} style={{width: `${dataRef.current.length * width}px`}}>
+      <div className='slider' ref={sliderRef} 
+        style={{width: `${dataRef.current.length * 100}%`, height: "100%"}}
+      >
         {
-          dataRef.current.map((img, index) => (
-            <div key={index} className="slice" onClick={() => handleItemClick(index)}>
-              <img src={img.src} alt="" width={width} height={height}/>
+          dataRef.current.map((child, index) => (
+            <div key={index} className="slice" onClick={() => handleItemClick(index)}
+            >
+              {child}
             </div>
           ))
         }
@@ -302,7 +302,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
         bottomCursor &&
         <div className='bottom-cursor'>
           {
-            data.map((_, index) => (
+            children.map((_, index) => (
               <div key={index} className={isCursorActive(index) ? "active" : ""}
                 onClick={() => handleCursorClick(index)}
                 style={{backgroundColor: isCursorActive(index) ? bottomCursorActiveColor : bottomCursorColor}}

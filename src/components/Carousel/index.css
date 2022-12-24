@@ -3,18 +3,17 @@
   /* border: 2px solid red; */
   cursor: pointer;
   position: relative;
+  width: 100%;
 }
 
 .carousel .slider {
   position: relative;
+  display: flex;
 }
 
 .carousel .slider .slice {
-  float: left;
-}
-
-.carousel .slider .slice img {
-  display: block;
+  flex: 1;
+  overflow: hidden;
 }
 
 .carousel .nav-btn {
