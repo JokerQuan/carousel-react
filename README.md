@@ -1,10 +1,12 @@
 # A fluent carousel by pure react + ts
+## Demo
+https://react-carousel.festudy.tech/
 
 ## Props
 | name | type | default value | description |
 |------|------|---------------|-------------|
-| width | string \| number | "auto" | carousel width, supprt vw, px, % |
-| height | string \| number | "auto" | carousel height, supprt vw, px, % |
+| width | string \| number | "auto" | carousel width, support vw, px, % |
+| height | string \| number | "auto" | carousel height, support vw, px, % |
 | pauseDuration | number | 2000 | pause time for autoplay<br>unit: ms |
 | slideDuration | number | 1000 | the duration of the sliding animation<br>unit: ms |
 | direction | 1 \| -1 | 1 | slide order<br>1: increment by child element subscript<br>-1: reverse
