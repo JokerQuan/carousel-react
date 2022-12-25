@@ -6,12 +6,22 @@
   width: 100%;
 }
 
-.carousel .slider {
+.carousel .slider.horizontal {
   position: relative;
   display: flex;
+  flex-direction: row;
+  height: "100%";
 }
 
-.carousel .slider .slice {
+.carousel .slider.vertical {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: "100%";
+}
+
+.carousel .slider.horizontal .slice,
+.carousel .slider.vertical .slice {
   flex: 1;
   overflow: hidden;
 }

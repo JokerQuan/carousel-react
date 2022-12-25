@@ -28,6 +28,7 @@ export interface ICarouselProps {
   bottomCursorActiveColor?: string;
   draggable?: boolean;
   dragthreshold?: number;
+  orientation?: "horizontal" | "vertical"
   onItemClick?: (item: ClickedItem) => void;
   children: Array<React.ReactNode>;
 }
@@ -48,6 +49,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     bottomCursorActiveColor = "#1677ff",
     draggable = true,
     dragthreshold = 150,
+    orientation = "horizontal",
     onItemClick,
     children,
   } = props
@@ -58,6 +60,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   const sliderRef = useRef<HTMLDivElement>(null)
   const slidingRef = useRef(false)
   const rafRef = useRef(-1)
+  const slidePropRef = useRef<"left" | "top">("left")
   const dataRef = useRef([
     children[children.length - 1],
     ...children,
@@ -83,9 +86,18 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     } else {
       leftRef.current = (dataRef.current.length - 2) * 100
     }
-    sliderRef.current!.style.left = `${-leftRef.current}%`
 
-    absPerWidthRef.current = sliderRef.current!.getBoundingClientRect().width / dataRef.current.length
+    slidePropRef.current = orientation === "vertical" ? "top" : "left"
+
+    sliderRef.current!.style[slidePropRef.current] = `${-leftRef.current}%`
+
+    let sliderRect = sliderRef.current!.getBoundingClientRect()
+    if (orientation === "vertical") {
+      absPerWidthRef.current = sliderRect.height / dataRef.current.length
+    } else {
+      absPerWidthRef.current = sliderRect.width / dataRef.current.length
+    }
+    
   }
 
   useEffect(init, [])
@@ -113,7 +125,7 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       const currTime = Math.min(slideDuration, Date.now() - startTime)
       leftRef.current = tweenFn(currTime, b, c, slideDuration)
       if (leftRef.current !== b + c) {
-        sliderRef.current!.style.left = `${-leftRef.current}%`
+        sliderRef.current!.style[slidePropRef.current] = `${-leftRef.current}%`
         rafRef.current = requestAnimationFrame(anim)
       } else {
         slidingRef.current = false
@@ -127,11 +139,11 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
   const calcNext = () => {
     if (leftRef.current >= (dataRef.current.length - 1) * 100) {
       leftRef.current = 100
-      sliderRef.current!.style.left = `${-leftRef.current}%`
+      sliderRef.current!.style[slidePropRef.current] = `${-leftRef.current}%`
       updateCurrent(1)
     } else if (leftRef.current <= 0) {
       leftRef.current = (dataRef.current!.length - 2) * 100
-      sliderRef.current!.style.left = `${-leftRef.current}%`
+      sliderRef.current!.style[slidePropRef.current] = `${-leftRef.current}%`
       updateCurrent(dataRef.current!.length - 2)
     } else {
       // calculate autoplay and pause
@@ -201,16 +213,17 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     if (!draggable) return;
     e.preventDefault()
     e.stopPropagation()
-    mouseDownClientXRef.current = e.clientX
+    mouseDownClientXRef.current = orientation === "vertical" ? e.clientY : e.clientX
   }
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!draggable) return;
     if (mouseDownClientXRef.current === -1) return;
     preventClick.current = true
-    mouseMoveClientXRef.current = e.clientX
+    mouseMoveClientXRef.current = orientation === "vertical" ? e.clientY : e.clientX
     const offset = (mouseMoveClientXRef.current - mouseDownClientXRef.current) / absPerWidthRef.current * 100
-    sliderRef.current!.style.left = `${-(leftRef.current - offset)}%`
+    
+    sliderRef.current!.style[slidePropRef.current] = `${-(leftRef.current - offset)}%`
   }
 
   const handleMouseUp = (e: MouseEvent) => {
@@ -263,6 +276,19 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     }
   }
 
+  const calcSliderStyle = () => {
+    if (orientation === "vertical") {
+      return {
+        width: "100%",
+        height: `${dataRef.current.length * 100}%`, 
+      } as React.CSSProperties
+    }
+    return {
+      width: `${dataRef.current.length * 100}%`, 
+      height: "100%"
+    } as React.CSSProperties
+  }
+
   return (
     <div className='carousel' style={{width, height}}
       onMouseEnter={pauseTimer}
@@ -271,8 +297,8 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
     >
-      <div className='slider' ref={sliderRef} 
-        style={{width: `${dataRef.current.length * 100}%`, height: "100%"}}
+      <div className={`slider ${orientation}`} ref={sliderRef} 
+        style={calcSliderStyle()}
       >
         {
           dataRef.current.map((child, index) => (
