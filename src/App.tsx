@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React from 'react'
 import './App.css'
 import Carousel from './components/Carousel'
 
@@ -47,6 +47,8 @@ function App() {
         tweenAnime="ease"
         orientation='vertical'
         onItemClick={item => console.log(item)}
+        navButtonOrientation="vertical"
+        dotsLocation='left'
       >
         {
           childrenData.map((item, index) => (

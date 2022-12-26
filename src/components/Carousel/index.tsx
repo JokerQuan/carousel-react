@@ -1,5 +1,4 @@
 import React, { 
-  FunctionComponent,
   MouseEvent,
   useEffect, 
   useMemo,
@@ -23,17 +22,19 @@ export interface ICarouselProps {
   autoPlay?: boolean;
   tweenAnime?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "bounce" | Function;
   navButton?: boolean;
-  bottomCursor?: boolean;
-  bottomCursorColor?: string;
-  bottomCursorActiveColor?: string;
+  navButtonOrientation?: "horizontal" | "vertical";
+  dots?: boolean;
+  dotsColor?: string;
+  dotsActivedColor?: string;
+  dotsLocation?: "top" | "bottom" | "left" | "right";
   draggable?: boolean;
   dragthreshold?: number;
-  orientation?: "horizontal" | "vertical"
+  orientation?: "horizontal" | "vertical";
   onItemClick?: (item: ClickedItem) => void;
   children: Array<React.ReactNode>;
 }
 
-const Carousel: FunctionComponent<ICarouselProps> = (props) => {
+const Carousel: React.FC<ICarouselProps> = (props) => {
   const { 
     width,
     height,
@@ -44,9 +45,11 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     autoPlay = true,
     tweenAnime = "ease",
     navButton = true,
-    bottomCursor = true,
-    bottomCursorColor = "#ffffff",
-    bottomCursorActiveColor = "#1677ff",
+    navButtonOrientation = "horizontal",
+    dots = true,
+    dotsColor = "#ffffff",
+    dotsActivedColor = "#1677ff",
+    dotsLocation = "bottom",
     draggable = true,
     dragthreshold = 150,
     orientation = "horizontal",
@@ -192,21 +195,21 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
     setCurrent(current + 1)
   }
 
-  const isCursorActive = (cursorIndex: number) : boolean => {
-    if (current === cursorIndex + 1) {
+  const isDotActive = (dotIndex: number) : boolean => {
+    if (current === dotIndex + 1) {
       return true
     }
-    if (current <= 0 && cursorIndex == dataRef.current.length - 3) {
+    if (current <= 0 && dotIndex == dataRef.current.length - 3) {
       return true
     }
-    if (current >= dataRef.current.length - 1 && cursorIndex === 0) {
+    if (current >= dataRef.current.length - 1 && dotIndex === 0) {
       return true
     }
     return false
   }
 
-  const handleCursorClick = (cursorIndex: number) => {
-    setCurrent(cursorIndex + 1)
+  const handleDotClick = (dotIndex: number) => {
+    setCurrent(dotIndex + 1)
   }
 
   const handleMouseDown = (e: MouseEvent) => {
@@ -312,12 +315,14 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
       {
         navButton && 
         <>
-          <div className='nav-btn left' onClick={goPrev}
+          <div className={`nav-btn ${navButtonOrientation} ${navButtonOrientation === "horizontal" ? "left" : "top"}`} 
+            onClick={goPrev}
             onMouseUp={e => e.stopPropagation()}
             onMouseDown={e => e.stopPropagation()}
             onMouseMove={e => e.stopPropagation()}
             ></div>
-          <div className='nav-btn right' onClick={goNext}
+          <div className={`nav-btn ${navButtonOrientation} ${navButtonOrientation === "horizontal" ? "right" : "bottom"}`}  
+            onClick={goNext}
             onMouseUp={e => e.stopPropagation()}
             onMouseDown={e => e.stopPropagation()}
             onMouseMove={e => e.stopPropagation()}
@@ -325,13 +330,13 @@ const Carousel: FunctionComponent<ICarouselProps> = (props) => {
         </>
       }
       {
-        bottomCursor &&
-        <div className='bottom-cursor'>
+        dots &&
+        <div className={`dots ${dotsLocation}`}>
           {
             children.map((_, index) => (
-              <div key={index} className={isCursorActive(index) ? "active" : ""}
-                onClick={() => handleCursorClick(index)}
-                style={{backgroundColor: isCursorActive(index) ? bottomCursorActiveColor : bottomCursorColor}}
+              <div key={index} className={isDotActive(index) ? "active" : ""}
+                onClick={() => handleDotClick(index)}
+                style={{backgroundColor: isDotActive(index) ? dotsActivedColor : dotsColor}}
               ></div>
             ))
           }

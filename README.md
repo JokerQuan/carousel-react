@@ -14,9 +14,10 @@ https://react-carousel.festudy.tech/
 | autoPlay | boolean | true | autoplay |
 | tweenAnime | "linear"\|<br>"ease"\|<br>"ease-in"\|<br>"ease-out"\|<br>"ease-in-out"\|<br>"bounce"\|<br>Function | "ease" | item slide tween animation, you can set custom animation functions |
 | navButton | boolean | true | enable navigator button |
-| bottomCursor | boolean | true | enable bottom cursor |
-| bottomCursorColor | string | "#ffffff" | bottom cursor color |
-| bottomCursorActiveColor | string | "#1677ff" | bottom actived cursor color |
+| navButtonOrientation | "horizontal" \| "vertical" | "horizontal" | navigator button orientation |
+| dots | boolean | true | enable dots |
+| dotsColor | string | "#ffffff" | dots color |
+| dotsActivedColor | string | "#1677ff" | actived dot color |
 | draggable | boolean | true | enable mouse drag to slide |
 | dragthreshold | number | 150 | threshold for slide distanse<br>uint: px |
 | orientation | "horizontal" \| "vertical" | "horizontal" | slide orientation |
