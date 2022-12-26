@@ -12,7 +12,7 @@ https://react-carousel.festudy.tech/
 | direction | 1 \| -1 | 1 | slide order<br>1: increment by child element subscript<br>-1: reverse
 | pauseOnHover | boolean | true | pause autoplay when mouse hover |
 | autoPlay | boolean | true | autoplay |
-| tweenAnime | "linear"\|<br>"ease"\|<br>"ease-in"\|<br>"ease-out"\|<br>"ease-in-out"\|<br>"bounce"\|<br>Function | "ease" | item slide tween animation, you can set custom animation functions |
+| tweenAnime | "linear" \|<br>"ease" \|<br>"ease-in" \|<br>"ease-out" \|<br>"ease-in-out" \|<br>"bounce" \|<br>Function | "ease" | item slide tween animation, you can set custom animation functions |
 | navButton | boolean | true | enable navigator button |
 | navButtonOrientation | "horizontal" \| "vertical" | "horizontal" | navigator button orientation |
 | dots | boolean | true | enable dots |
