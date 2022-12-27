@@ -114,6 +114,9 @@ const Carousel: React.FC<ICarouselProps> = (props) => {
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current)
     }
+    if (timer.current) {
+      clearTimeout(timer.current)
+    }
     const startTime = Date.now()
     //begin value
     const b = leftRef.current
@@ -235,6 +238,8 @@ const Carousel: React.FC<ICarouselProps> = (props) => {
     if (!draggable) return;
     if (mouseMoveClientXRef.current === 0) {
       mouseDownClientXRef.current = -1
+      //if autoplay==true && pauseOnHover == false && mouseDown && noMove , trigger the timer
+      calcNext()
       return;
     }
     handleSlideEnd()
