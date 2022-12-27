@@ -28,7 +28,7 @@ export interface ICarouselProps {
   dotsActivedColor?: string;
   dotsLocation?: "top" | "bottom" | "left" | "right";
   draggable?: boolean;
-  dragthreshold?: number;
+  dragThreshold?: number;
   orientation?: "horizontal" | "vertical";
   onItemClick?: (item: ClickedItem) => void;
   children: Array<React.ReactNode>;
@@ -51,7 +51,7 @@ const Carousel: React.FC<ICarouselProps> = (props) => {
     dotsActivedColor = "#1677ff",
     dotsLocation = "bottom",
     draggable = true,
-    dragthreshold = 150,
+    dragThreshold = 150,
     orientation = "horizontal",
     onItemClick,
     children,
@@ -214,6 +214,8 @@ const Carousel: React.FC<ICarouselProps> = (props) => {
 
   const handleMouseDown = (e: MouseEvent) => {
     if (!draggable) return;
+    if (slidingRef.current) return;
+    if (timer.current) clearTimeout(timer.current);
     e.preventDefault()
     e.stopPropagation()
     mouseDownClientXRef.current = orientation === "vertical" ? e.clientY : e.clientX
@@ -252,7 +254,7 @@ const Carousel: React.FC<ICarouselProps> = (props) => {
     const absOffset = mouseMoveClientXRef.current - mouseDownClientXRef.current
     const offset = absOffset / absPerWidthRef.current * 100
     leftRef.current = leftRef.current - offset
-    if (Math.abs(absOffset) >= dragthreshold) {
+    if (Math.abs(absOffset) >= dragThreshold) {
       setCurrent(current - Math.abs(offset) / offset)
     } else {
       go(current)

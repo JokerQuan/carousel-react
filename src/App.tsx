@@ -24,7 +24,7 @@ function App() {
         slideDuration={500}
         direction={1}
         autoPlay={true}
-        pauseOnHover={true}
+        pauseOnHover={false}
         tweenAnime="ease"
         onItemClick={item => console.log(item)}
       >

@@ -19,6 +19,6 @@ https://react-carousel.festudy.tech/
 | dotsColor | string | "#ffffff" | dots color |
 | dotsActivedColor | string | "#1677ff" | actived dot color |
 | draggable | boolean | true | enable mouse drag to slide |
-| dragthreshold | number | 150 | threshold for slide distanse<br>uint: px |
+| dragThreshold | number | 150 | threshold for slide distanse<br>uint: px |
 | orientation | "horizontal" \| "vertical" | "horizontal" | slide orientation |
 | onItemClick | function(item) | null | callback when item clicked |
